@@ -33,40 +33,35 @@ func main() {
 		parts := strings.Split(t, " ")
 		a := parts[0]
 		b := parts[1]
+		c := b
 
-		if b == LOOSE { //loose
-			switch a {
-			case ROCK:
+		if b == LOOSE {
+			if a == ROCK {
 				b = RESP_SCISSOR
-			case PAPER:
+			} else if a == PAPER {
 				b = RESP_ROCK
-			case SCISSOR:
+			} else if a == SCISSOR {
 				b = RESP_PAPER
 			}
-		}
-
-		if b == DRAW { //draw
-			switch a {
-			case ROCK:
+		} else if b == DRAW {
+			if a == ROCK {
 				b = RESP_ROCK
-			case PAPER:
+			} else if a == PAPER {
 				b = RESP_PAPER
-			case SCISSOR:
+			} else if a == SCISSOR {
 				b = RESP_SCISSOR
 			}
-		}
-
-		if b == WIN { //win
-			switch a {
-			case ROCK:
+		} else if b == WIN {
+			if a == ROCK {
 				b = RESP_PAPER
-			case PAPER:
+			} else if a == PAPER {
 				b = RESP_SCISSOR
-			case SCISSOR:
+			} else if a == SCISSOR {
 				b = RESP_ROCK
 			}
 		}
 
+		fmt.Printf("%v : %v -> %v\n", a, c, b)
 		sum += calcResult(a, b)
 	}
 
