@@ -4,11 +4,49 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
-var rows [][]string
+var rows []*ElfStack
+
+type MultiStack interface {
+	PushToTop(values []interface{})
+	PushToBottom(values []interface{})
+	PopTop(items int)
+	Read(items int) []string
+}
+
+type ElfStack struct {
+	Items []string
+}
+
+func (s *ElfStack) Push(values []string, top bool) {
+
+	existing := make([]string, len(s.Items))
+	copy(existing, s.Items)
+	toAdd := make([]string, len(values))
+	copy(toAdd, values)
+
+	if top {
+		toAdd = append(toAdd, existing...)
+	} else {
+		toAdd = append(existing, toAdd...)
+	}
+
+	s.Items = toAdd
+}
+
+func (s *ElfStack) PopTop(items int) {
+	tmp := make([]string, len(s.Items)-items)
+	copy(tmp, s.Items[items:])
+	s.Items = tmp
+}
+
+func (s *ElfStack) Read(items int) []string {
+	return s.Items[:items]
+}
 
 func main() {
 	f, err := os.Open("input")
@@ -20,7 +58,6 @@ func main() {
 
 	stackdef := true
 	for fileScanner.Scan() {
-
 		t := fileScanner.Text()
 
 		if t == "" || t == " " {
@@ -28,24 +65,26 @@ func main() {
 			fmt.Println(rows)
 			continue
 		} else if t != "" && stackdef {
-			t = strings.Replace(t, "    ", "[0]", -1)
-			t = strings.Replace(t, " ", "", -1)
-			t = strings.Replace(t, "[", "", -1)
-			parts := strings.Split(t, "]")
+			reg := regexp.MustCompile(`\ {4}|\[\w*]`)
+			parts := reg.FindAllString(t, -1)
 
-			var l []string
-			for i, v := range parts[:len(parts)-1] {
-				v := v
-				if len(rows) <= i {
-					l = make([]string, 0)
-					rows = append(rows, l)
-				} else {
-					l = rows[i]
+			if len(rows) == 0 {
+				rows = make([]*ElfStack, len(parts))
+			}
+
+			for i, v := range parts {
+				if len(strings.TrimSpace(v)) == 0 {
+					continue
 				}
-				if v != "0" {
-					l = append(l, v)
+
+				l := rows[i]
+				if l == nil {
+					l = &ElfStack{}
 					rows[i] = l
 				}
+
+				l.Push([]string{v}, false)
+
 			}
 			continue
 		}
@@ -53,46 +92,38 @@ func main() {
 	}
 
 	for _, i := range rows {
-		fmt.Print(i[0])
+		fmt.Print(i.Read(1)[0])
 	}
 
 }
 
-func AddToFront(items []string, slice []string) []string {
-	s := append(items, slice...)
-	return s
-}
-
 func Move(cmd string) {
-	cmd = strings.Replace(cmd, "move ", "", -1)
-	cmd = strings.Replace(cmd, " from ", ",", -1)
-	cmd = strings.Replace(cmd, " to ", ",", -1)
-
-	parts := strings.Split(cmd, ",")
-
-	items, _ := strconv.Atoi(parts[0])
-	sourceIdx, _ := strconv.Atoi(parts[1])
-	targetIdx, _ := strconv.Atoi(parts[2])
+	itemCnt, sourceIdx, targetIdx := ParseCmd(cmd)
 
 	s := rows[sourceIdx-1]
 	t := rows[targetIdx-1]
 
-	cS := make([]string, len(s))
-	copy(cS, s)
+	itemsToCopy := s.Read(itemCnt)
+	t.Push(itemsToCopy, true)
+	s.PopTop(itemCnt)
+}
 
-	cT := make([]string, len(t))
-	copy(cT, t)
+func ParseCmd(cmd string) (items, sourceIdx, targetIdx int) {
+	reg := regexp.MustCompile(`\d+`)
 
-	cp := s[:items]
+	r := reg.FindAllString(cmd, -1)
 
-	nS := s[items:]
-	newSource := make([]string, len(nS))
-	copy(newSource, nS)
+	items, err := strconv.Atoi(r[0])
+	Must(err)
+	sourceIdx, err = strconv.Atoi(r[1])
+	Must(err)
+	targetIdx, err = strconv.Atoi(r[2])
+	Must(err)
+	return
+}
 
-	cp = append(cp, cT...)
-
-	rows[sourceIdx-1] = newSource
-	rows[targetIdx-1] = cp
-
-	fmt.Printf("%v -> %v -> %v -> %v -> %v -> %v\n", s, t, cS, cT, cp, rows[targetIdx-1])
+func Must(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
