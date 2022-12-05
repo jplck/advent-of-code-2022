@@ -23,14 +23,19 @@ func main() {
 
 		t := fileScanner.Text()
 
-		if t != "" && stackdef {
+		if t == "" || t == " " {
+			stackdef = false
+			fmt.Println(rows)
+			continue
+		} else if t != "" && stackdef {
 			t = strings.Replace(t, "    ", "[0]", -1)
 			t = strings.Replace(t, " ", "", -1)
 			t = strings.Replace(t, "[", "", -1)
 			parts := strings.Split(t, "]")
 
-			for i, v := range parts {
-				var l []string
+			var l []string
+			for i, v := range parts[:len(parts)-1] {
+				v := v
 				if len(rows) <= i {
 					l = make([]string, 0)
 					rows = append(rows, l)
@@ -43,16 +48,13 @@ func main() {
 				}
 			}
 			continue
-		} else if t == "" {
-			stackdef = false
-			continue
 		}
 		Move(t)
 	}
-	//fmt.Print(rows)
-	/*for _, i := range rows {
+
+	for _, i := range rows {
 		fmt.Print(i[0])
-	}*/
+	}
 
 }
 
@@ -72,10 +74,25 @@ func Move(cmd string) {
 	sourceIdx, _ := strconv.Atoi(parts[1])
 	targetIdx, _ := strconv.Atoi(parts[2])
 
-	v := rows[sourceIdx-1][0:items]
-	l := AddToFront(v, rows[targetIdx-1])
-	rows[targetIdx-1] = l
-	t := rows[sourceIdx-1][len(v):]
-	rows[sourceIdx-1] = t
-	fmt.Println(rows)
+	s := rows[sourceIdx-1]
+	t := rows[targetIdx-1]
+
+	cS := make([]string, len(s))
+	copy(cS, s)
+
+	cT := make([]string, len(t))
+	copy(cT, t)
+
+	cp := s[:items]
+
+	nS := s[items:]
+	newSource := make([]string, len(nS))
+	copy(newSource, nS)
+
+	cp = append(cp, cT...)
+
+	rows[sourceIdx-1] = newSource
+	rows[targetIdx-1] = cp
+
+	fmt.Printf("%v -> %v -> %v -> %v -> %v -> %v\n", s, t, cS, cT, cp, rows[targetIdx-1])
 }
