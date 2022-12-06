@@ -9,8 +9,6 @@ import (
 	"strings"
 )
 
-var rows []*ElfStack
-
 type MultiStack interface {
 	PushToTop(values []interface{})
 	PushToBottom(values []interface{})
@@ -38,74 +36,78 @@ func (s *ElfStack) Push(values []string, top bool) {
 	s.Items = toAdd
 }
 
-func (s *ElfStack) PopTop(items int) {
-	tmp := make([]string, len(s.Items)-items)
-	copy(tmp, s.Items[items:])
+func (s *ElfStack) Pop(nrOfItems int) {
+	tmp := make([]string, len(s.Items)-nrOfItems)
+	copy(tmp, s.Items[nrOfItems:])
 	s.Items = tmp
 }
 
-func (s *ElfStack) Read(items int) []string {
-	return s.Items[:items]
+func (s *ElfStack) Peak(nrOfItems int) []string {
+	return s.Items[:nrOfItems]
 }
 
 func main() {
-	f, err := os.Open("input")
+	var stackColumns []*ElfStack
+
+	inputFileHandle, err := os.Open("input")
 	if err != nil {
 		panic(err)
 	}
-	fileScanner := bufio.NewScanner(f)
+	fileScanner := bufio.NewScanner(inputFileHandle)
 	fileScanner.Split(bufio.ScanLines)
 
-	stackdef := true
+	lineIsStackDefinition := true
 	for fileScanner.Scan() {
 		t := fileScanner.Text()
 
-		if t == "" || t == " " {
-			stackdef = false
-			fmt.Println(rows)
+		if strings.TrimSpace(t) == "" {
+			lineIsStackDefinition = false
 			continue
-		} else if t != "" && stackdef {
-			reg := regexp.MustCompile(`\ {4}|\[\w*]`)
-			parts := reg.FindAllString(t, -1)
+		}
 
-			if len(rows) == 0 {
-				rows = make([]*ElfStack, len(parts))
+		if lineIsStackDefinition {
+			reg := regexp.MustCompile(`\ {4}|\[\w*]`)
+			stackDefInRow := reg.FindAllString(t, -1)
+
+			if len(stackColumns) == 0 {
+				stackColumns = make([]*ElfStack, len(stackDefInRow))
 			}
 
-			for i, v := range parts {
-				if len(strings.TrimSpace(v)) == 0 {
+			for partIdx, partValue := range stackDefInRow {
+				if len(strings.TrimSpace(partValue)) == 0 {
 					continue
 				}
 
-				l := rows[i]
+				l := stackColumns[partIdx]
 				if l == nil {
 					l = &ElfStack{}
-					rows[i] = l
+					stackColumns[partIdx] = l
 				}
 
-				l.Push([]string{v}, false)
+				l.Push([]string{partValue}, false)
 
 			}
 			continue
 		}
-		Move(t)
+
+		Move(t, stackColumns)
 	}
 
-	for _, i := range rows {
-		fmt.Print(i.Read(1)[0])
+	for _, stackColumn := range stackColumns {
+		fmt.Print(stackColumn.Peak(1)[0])
 	}
 
 }
 
-func Move(cmd string) {
+func Move(cmd string, stackColumns []*ElfStack) {
 	itemCnt, sourceIdx, targetIdx := ParseCmd(cmd)
 
-	s := rows[sourceIdx-1]
-	t := rows[targetIdx-1]
+	s := stackColumns[sourceIdx-1]
+	t := stackColumns[targetIdx-1]
 
-	itemsToCopy := s.Read(itemCnt)
+	itemsToCopy := s.Peak(itemCnt)
 	t.Push(itemsToCopy, true)
-	s.PopTop(itemCnt)
+	s.Pop(itemCnt)
 }
 
 func ParseCmd(cmd string) (items, sourceIdx, targetIdx int) {
