@@ -17,13 +17,13 @@ func main() {
 	fileScanner.Split(bufio.ScanLines)
 
 	sum := 0
-	highest := make([]int, 223)
+	highest := make([]int, 0)
 	cnt := 0
 	for fileScanner.Scan() {
 		t := fileScanner.Text()
 
 		if t == "" {
-			highest[cnt] = sum
+			highest = append(highest, sum)
 			cnt++
 
 			sum = 0
@@ -41,7 +41,6 @@ func main() {
 	highest[len(highest)-1] = sum
 	sort.Ints(highest)
 
-	fmt.Println(cnt)
 	fmt.Println(Sum(highest[len(highest)-3:]))
 }
 

@@ -38,5 +38,4 @@ func main() {
 	}
 
 	fmt.Println(max)
-	fmt.Println(sum)
 }
