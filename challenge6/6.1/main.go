@@ -40,9 +40,9 @@ func FindOccurences(message string) int {
 	msgStartIdx := readMsgLen - MSG_LEN
 	occurenceCount := 0
 
-	for i := msgStartIdx; i < readMsgLen; i++ {
+	for posInMsg := msgStartIdx; posInMsg < readMsgLen; posInMsg++ {
 		stringToEvaluate := message[msgStartIdx:]
-		char := message[i : i+1]
+		char := message[posInMsg : posInMsg+1]
 		occurenceCount += strings.Count(stringToEvaluate, char) - 1
 	}
 	return occurenceCount
