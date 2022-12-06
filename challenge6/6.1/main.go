@@ -28,22 +28,23 @@ out:
 
 		readMsg = fmt.Sprintf("%v%v", readMsg, readInputChar)
 
-		if len(readMsg) >= MSG_LEN && FindOccurences(readMsg) == 0 {
+		if len(readMsg) >= MSG_LEN && !HasDuplicates(readMsg) {
 			break out
 		}
 	}
 	fmt.Println(markerCount)
 }
 
-func FindOccurences(message string) int {
+func HasDuplicates(message string) bool {
 	readMsgLen := len(message)
 	msgStartIdx := readMsgLen - MSG_LEN
-	occurenceCount := 0
 
 	for posInMsg := msgStartIdx; posInMsg < readMsgLen; posInMsg++ {
 		stringToEvaluate := message[msgStartIdx:]
 		char := message[posInMsg : posInMsg+1]
-		occurenceCount += strings.Count(stringToEvaluate, char) - 1
+		if strings.Count(stringToEvaluate, char)-1 > 0 {
+			return true
+		}
 	}
-	return occurenceCount
+	return false
 }
