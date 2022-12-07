@@ -31,3 +31,11 @@ func (f *Dir) Cd(dirName string) *Dir {
 	}
 	return nil
 }
+
+func (f *Fs) Cd(dirName string) {
+	f.CurrentDir = f.CurrentDir.Dirs[dirName]
+}
+
+func (f *Fs) CdUp() {
+	f.CurrentDir = f.CurrentDir.Parent
+}

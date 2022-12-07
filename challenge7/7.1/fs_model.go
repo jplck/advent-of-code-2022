@@ -1,11 +1,22 @@
 package main
 
+type IFs interface {
+	Cd(dirName string)
+	CdUp()
+}
+
+type Fs struct {
+	CurrentDir *Dir
+	RootDir    *Dir
+}
+
 type IDir interface {
 	List()
 	Size() int
 	AddFile(file *File)
 	AddDir(dir *Dir)
 	Cd(dirName string)
+	CdUp()
 }
 
 type Dir struct {

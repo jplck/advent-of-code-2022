@@ -25,13 +25,16 @@ func main() {
 	fileScanner.Split(bufio.ScanLines)
 
 	root := Dir{
-		Name: "root",
+		Name: "/",
 	}
 	root.AddDir(&Dir{
 		Name: "/",
 	})
 
-	currentDir := &root
+	fs := Fs{
+		CurrentDir: &root,
+	}
+
 	for fileScanner.Scan() {
 		readInput := fileScanner.Text()
 
@@ -42,22 +45,22 @@ func main() {
 			continue
 		case PREFIX_CD:
 			if rowValue == ".." {
-				currentDir = currentDir.Parent
+				fs.CdUp()
 				continue
 			}
-			currentDir = currentDir.Cd(rowValue)
+			fs.Cd(rowValue)
 		case PREFIX_DIR:
 			newDir := Dir{
 				Name: rowValue,
 			}
-			currentDir.AddDir(&newDir)
+			fs.CurrentDir.AddDir(&newDir)
 		default:
 			fileName, fileSize := parseFile(readInput)
 			newFile := File{
 				Name: fileName,
 				Size: fileSize,
 			}
-			currentDir.AddFile(&newFile)
+			fs.CurrentDir.AddFile(&newFile)
 		}
 	}
 	//challenge 7.1
