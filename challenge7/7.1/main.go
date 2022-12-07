@@ -61,12 +61,12 @@ func main() {
 		}
 	}
 	//challenge 7.1
-	//sum := SumDirs(root.Dirs["/"].Dirs)
-	//fmt.Println(sum)
+	sum := SumDirSizesBelowThreshold(root.Dirs["/"].Dirs)
+	fmt.Printf("RESULT 7.1: %v\n", sum)
 
 	//Challenge 7.2
 	sizes := FindFolderSizesAvailableForDeletion(root)
-	fmt.Println(Min(sizes))
+	fmt.Printf("RESULT 7.2: %v\n", Min(sizes))
 }
 
 func FindFolderSizesAvailableForDeletion(root Dir) []int {
