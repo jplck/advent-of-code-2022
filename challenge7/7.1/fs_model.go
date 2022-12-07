@@ -7,7 +7,6 @@ type IFs interface {
 
 type Fs struct {
 	CurrentDir *Dir
-	RootDir    *Dir
 }
 
 type IDir interface {
