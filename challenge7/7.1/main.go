@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+const FOLDER_SIZE_THRESHOLD = 100000
+const TOTAL_SPACE_AVAILABLE = 70000000
+const SPACE_REQUIRED_FOR_UPDATE = 30000000
+
 func main() {
 	fileHandle, err := os.Open("input")
 	if err != nil {
@@ -30,7 +34,7 @@ func main() {
 			continue
 		}
 
-		if doCd, dirName := ChangeDir(readInput); doCd {
+		if doCd, dirName := parseCd(readInput); doCd {
 			if dirName == ".." {
 				currentDir = currentDir.Parent
 				continue
@@ -39,7 +43,7 @@ func main() {
 			continue
 		}
 
-		if isDir, dirName := IsDir(readInput); isDir {
+		if isDir, dirName := parseDir(readInput); isDir {
 			newDir := Dir{
 				Name: dirName,
 			}
@@ -47,7 +51,7 @@ func main() {
 			continue
 		}
 
-		fileName, fileSize := ParseFile(readInput)
+		fileName, fileSize := parseFile(readInput)
 		newFile := File{
 			Name: fileName,
 			Size: fileSize,
@@ -60,17 +64,21 @@ func main() {
 	//fmt.Println(sum)
 
 	//Challenge 7.2
-	sizes := FreeUpSpace(root)
+	sizes := FindFolderSizesAvailableForDeletion(root)
 	fmt.Println(Min(sizes))
 }
 
-func FreeUpSpace(root Dir) []int {
-	totalSpace := 70000000
+func FindFolderSizesAvailableForDeletion(root Dir) []int {
+	totalSpace := TOTAL_SPACE_AVAILABLE
 	usedSpace := root.Size()
 	freeSpace := totalSpace - usedSpace
-	additionalSpaceRequiredForUpdate := 30000000 - freeSpace
+	additionalSpaceRequiredForUpdate := SPACE_REQUIRED_FOR_UPDATE - freeSpace
 
-	availableDirSizes := FindDirToDelete(additionalSpaceRequiredForUpdate, root.Dirs)
+	availableDirSizes := FindDirToDelete(
+		additionalSpaceRequiredForUpdate,
+		root.Dirs,
+	)
+
 	return availableDirSizes
 }
 
@@ -80,43 +88,45 @@ func FindDirToDelete(requiredSize int, dirs map[string]*Dir) []int {
 		if dir.Size() >= requiredSize {
 			availableDirSizes = append(availableDirSizes, dir.Size())
 		}
-		availableDirSizes = append(availableDirSizes, FindDirToDelete(requiredSize, dir.Dirs)...)
+		availableDirSizes = append(
+			availableDirSizes,
+			FindDirToDelete(requiredSize, dir.Dirs)...,
+		)
 	}
 	return availableDirSizes
 }
 
-func SumDirs(dirs map[string]*Dir) int {
+func SumDirSizesBelowThreshold(dirs map[string]*Dir) int {
 	sum := 0
 	for _, dir := range dirs {
-		size := dir.Size()
-		if size <= 100000 {
+		dirSize := dir.Size()
+		if dirSize <= FOLDER_SIZE_THRESHOLD {
 			sum += dir.Size()
 		}
-		sum += SumDirs(dir.Dirs)
+		sum += SumDirSizesBelowThreshold(dir.Dirs)
 	}
 	return sum
 }
 
-func ChangeDir(row string) (doCd bool, dirName string) {
-	prefix := "$ cd "
-	if strings.HasPrefix(row, prefix) {
-		doCd = true
-		dirName = strings.Replace(row, prefix, "", 1)
-	}
-
+func parseCd(row string) (doCd bool, dirName string) {
+	doCd, dirName = parseInputRow(row, "$ cd ")
 	return
 }
 
-func IsDir(row string) (isDir bool, dirName string) {
-	prefix := "dir "
+func parseDir(row string) (isDir bool, dirName string) {
+	isDir, dirName = parseInputRow(row, "dir ")
+	return
+}
+
+func parseInputRow(row string, prefix string) (hasPrefix bool, value string) {
 	if strings.HasPrefix(row, prefix) {
-		isDir = true
-		dirName = strings.Replace(row, prefix, "", 1)
+		hasPrefix = true
+		value = strings.Replace(row, prefix, "", 1)
 	}
 	return
 }
 
-func ParseFile(row string) (fileName string, fileSize int) {
+func parseFile(row string) (fileName string, fileSize int) {
 	fileComponents := strings.Split(row, " ")
 	fileName = fileComponents[1]
 	fileSize, err := strconv.Atoi(fileComponents[0])
