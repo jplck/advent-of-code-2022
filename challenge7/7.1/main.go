@@ -12,6 +12,10 @@ const FOLDER_SIZE_THRESHOLD = 100000
 const TOTAL_SPACE_AVAILABLE = 70000000
 const SPACE_REQUIRED_FOR_UPDATE = 30000000
 
+const PREFIX_DIR = "dir "
+const PREFIX_LS = "$ ls"
+const PREFIX_CD = "$ cd "
+
 func main() {
 	fileHandle, err := os.Open("input")
 	if err != nil {
@@ -30,34 +34,31 @@ func main() {
 	currentDir := &root
 	for fileScanner.Scan() {
 		readInput := fileScanner.Text()
-		if readInput == "$ ls" {
-			continue
-		}
 
-		if doCd, dirName := parseCd(readInput); doCd {
-			if dirName == ".." {
+		prefix, rowValue := parseInputRow(readInput)
+
+		switch prefix {
+		case PREFIX_LS:
+			continue
+		case PREFIX_CD:
+			if rowValue == ".." {
 				currentDir = currentDir.Parent
 				continue
 			}
-			currentDir = currentDir.Cd(dirName)
-			continue
-		}
-
-		if isDir, dirName := parseDir(readInput); isDir {
+			currentDir = currentDir.Cd(rowValue)
+		case PREFIX_DIR:
 			newDir := Dir{
-				Name: dirName,
+				Name: rowValue,
 			}
 			currentDir.AddDir(&newDir)
-			continue
+		default:
+			fileName, fileSize := parseFile(readInput)
+			newFile := File{
+				Name: fileName,
+				Size: fileSize,
+			}
+			currentDir.AddFile(&newFile)
 		}
-
-		fileName, fileSize := parseFile(readInput)
-		newFile := File{
-			Name: fileName,
-			Size: fileSize,
-		}
-		currentDir.AddFile(&newFile)
-
 	}
 	//challenge 7.1
 	//sum := SumDirs(root.Dirs["/"].Dirs)
@@ -108,20 +109,20 @@ func SumDirSizesBelowThreshold(dirs map[string]*Dir) int {
 	return sum
 }
 
-func parseCd(row string) (doCd bool, dirName string) {
-	doCd, dirName = parseInputRow(row, "$ cd ")
-	return
-}
+func parseInputRow(row string) (prefix string, value string) {
 
-func parseDir(row string) (isDir bool, dirName string) {
-	isDir, dirName = parseInputRow(row, "dir ")
-	return
-}
+	types := []string{
+		PREFIX_CD,
+		PREFIX_DIR,
+		PREFIX_LS,
+	}
 
-func parseInputRow(row string, prefix string) (hasPrefix bool, value string) {
-	if strings.HasPrefix(row, prefix) {
-		hasPrefix = true
-		value = strings.Replace(row, prefix, "", 1)
+	for _, rowType := range types {
+		if strings.HasPrefix(row, rowType) {
+			prefix = rowType
+			value = strings.Replace(row, prefix, "", 1)
+			break
+		}
 	}
 	return
 }
