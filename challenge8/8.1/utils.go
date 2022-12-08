@@ -15,3 +15,11 @@ func must(err error) {
 		panic(err)
 	}
 }
+
+func invert(slice []int) []int {
+	rev := make([]int, 0)
+	for i := len(slice) - 1; i >= 0; i-- {
+		rev = append(rev, slice[i])
+	}
+	return rev
+}
