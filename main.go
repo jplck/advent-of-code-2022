@@ -44,7 +44,7 @@ func main() {
 	case "8":
 		challenge8_12.Run("./puzzles/input8")
 	case "9":
-		challenge9_1.Run("./puzzles/input9")
+		challenge9_1.Run("./puzzles/input9_1")
 	}
 
 }

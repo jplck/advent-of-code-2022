@@ -20,8 +20,8 @@ func Run(inputFile string) {
 		e1l, e1r := ParseRange(parts[0])
 		e2l, e2r := ParseRange(parts[1])
 
-		r1 := Range(e1l, e1r)
-		r2 := Range(e2l, e2r)
+		r1 := utils.Range(e1l, e1r)
+		r2 := utils.Range(e2l, e2r)
 
 	out:
 		for _, v1 := range r1 {
@@ -44,14 +44,6 @@ func ParseRange(rangeStr string) (left, right int) {
 	right, err = strconv.Atoi(e[1])
 	must(err)
 	return
-}
-
-func Range(min, max int) []int {
-	a := make([]int, max-min+1)
-	for i := range a {
-		a[i] = min + i
-	}
-	return a
 }
 
 func must(err error) {
