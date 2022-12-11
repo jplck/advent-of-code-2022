@@ -3,6 +3,9 @@ package utils
 import (
 	"bufio"
 	"os"
+	"regexp"
+	"sort"
+	"strconv"
 )
 
 func Min(numbers []int) int {
@@ -71,4 +74,22 @@ func Range(min, max int) []int {
 		a[i] = min + i
 	}
 	return a
+}
+
+func FindAllNumbers(searchInStr string) []int {
+	reg := regexp.MustCompile(`[0-9]+`)
+	items := reg.FindAllString(searchInStr, -1)
+	result := make([]int, 0)
+	for _, v := range items {
+		num, err := strconv.Atoi(v)
+		Must(err)
+		result = append(result, num)
+	}
+	return result
+}
+
+func SortArrayOfInts(inputArray []int) []int {
+	slice := inputArray[:]
+	sort.Sort(sort.Reverse(sort.IntSlice(slice)))
+	return slice
 }
