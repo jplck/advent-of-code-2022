@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/jplck/advent-of-code-2022/challenge10_1"
 	"github.com/jplck/advent-of-code-2022/challenge10_2"
@@ -20,6 +21,7 @@ import (
 	"github.com/jplck/advent-of-code-2022/challenge7_12"
 	"github.com/jplck/advent-of-code-2022/challenge8_12"
 	"github.com/jplck/advent-of-code-2022/challenge9_1"
+	"github.com/jplck/advent-of-code-2022/utils"
 )
 
 func main() {
@@ -52,7 +54,9 @@ func main() {
 		challenge10_1.Run("./puzzles/input10")
 		challenge10_2.Run("./puzzles/input10")
 	case "11":
-		challenge11.Run("./puzzles/input11")
+		rounds, err := strconv.Atoi(os.Args[2])
+		utils.Must(err)
+		challenge11.Run("./puzzles/input11", rounds)
 	}
 
 }

@@ -8,8 +8,7 @@ import (
 	"github.com/jplck/advent-of-code-2022/utils"
 )
 
-const ROUNDS = 20
-const WORRY_DIVISOR = 3
+const WORRY_DIVISOR = 1
 
 type Monkey struct {
 	Items             []int
@@ -20,14 +19,31 @@ type Monkey struct {
 	TrueTarget        *Monkey
 	FalseTarget       *Monkey
 	InspectionCounter int
-	Idx               int
 }
 
-func (m *Monkey) Inspect() {
+func GetCommonFactor(monkeys []*Monkey) int {
+	common := 1
+	for _, monkey := range monkeys {
+		common *= monkey.TestDivisor
+	}
+	return common
+}
+
+func (m *Monkey) Inspect(superMod int) {
 	for _, item := range m.Items {
 		m.InspectionCounter++
 
-		newWorryValue := int(ParseOperation(m.Operation, float64(item)) / WORRY_DIVISOR)
+		newWorryValue := ParseOperation(m.Operation, item) / WORRY_DIVISOR
+
+		if WORRY_DIVISOR != 3 {
+			/*
+				Remark for me: Challenge was to find a way to reduce the sice of item,
+				without changing the outcome of the following logic. As I understood now, with the help
+				of a reddit thread, you can use module arithmetics to find a common multiplier/divisor.
+				was a bit above my head :)
+			*/
+			newWorryValue = newWorryValue % superMod
+		}
 
 		if newWorryValue%m.TestDivisor == 0 {
 			m.TrueTarget.Throw(newWorryValue)
@@ -42,9 +58,9 @@ func (m *Monkey) Throw(item int) {
 	m.Items = append(m.Items, item)
 }
 
-func Run(inputFile string) {
+func Run(inputFile string, rounds int) {
 	monkeys := ParseMonkeys(inputFile)
-	RunInspection(monkeys)
+	RunInspection(monkeys, rounds)
 
 	inspectionCounts := make([]int, 0)
 	for _, m := range monkeys {
@@ -69,7 +85,6 @@ func ParseMonkeys(inputFile string) []*Monkey {
 		if strings.HasPrefix(readValue, "Monkey") {
 			currentMonkey = &Monkey{
 				InspectionCounter: 0,
-				Idx:               len(monkeys),
 			}
 			monkeys = append(monkeys, currentMonkey)
 		} else if strings.HasPrefix(readValue, "  Starting items:") {
@@ -88,22 +103,23 @@ func ParseMonkeys(inputFile string) []*Monkey {
 	return monkeys
 }
 
-func RunInspection(monkeys []*Monkey) {
-	for round := 0; round < ROUNDS; round++ {
+func RunInspection(monkeys []*Monkey, rounds int) {
+	superMod := GetCommonFactor(monkeys)
+	for round := 0; round < rounds; round++ {
 		for _, m := range monkeys {
 			m.TrueTarget = monkeys[m.TrueTargetIdx]
 			m.FalseTarget = monkeys[m.FalseTargetIdx]
-			m.Inspect()
+			m.Inspect(superMod)
 		}
 	}
 }
 
-func ParseOperation(operation string, old float64) float64 {
+func ParseOperation(operation string, old int) int {
 	expression, err := govaluate.NewEvaluableExpression(operation)
 	utils.Must(err)
 	parameters := make(map[string]interface{}, 8)
 	parameters["old"] = old
 	result, err := expression.Evaluate(parameters)
 	utils.Must(err)
-	return result.(float64)
+	return int(result.(float64))
 }
