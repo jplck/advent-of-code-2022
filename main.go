@@ -7,6 +7,7 @@ import (
 	"github.com/jplck/advent-of-code-2022/challenge10_1"
 	"github.com/jplck/advent-of-code-2022/challenge10_2"
 	"github.com/jplck/advent-of-code-2022/challenge11"
+	"github.com/jplck/advent-of-code-2022/challenge12"
 	"github.com/jplck/advent-of-code-2022/challenge1_1"
 	"github.com/jplck/advent-of-code-2022/challenge1_2"
 	"github.com/jplck/advent-of-code-2022/challenge2_1"
@@ -57,6 +58,8 @@ func main() {
 		rounds, err := strconv.Atoi(os.Args[2])
 		utils.Must(err)
 		challenge11.Run("./puzzles/input11", rounds)
+	case "12":
+		challenge12.Run("./puzzles/input12")
 	}
 
 }
