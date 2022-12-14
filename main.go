@@ -9,6 +9,7 @@ import (
 	"github.com/jplck/advent-of-code-2022/challenge11"
 	"github.com/jplck/advent-of-code-2022/challenge12"
 	"github.com/jplck/advent-of-code-2022/challenge13"
+	"github.com/jplck/advent-of-code-2022/challenge14"
 	"github.com/jplck/advent-of-code-2022/challenge1_1"
 	"github.com/jplck/advent-of-code-2022/challenge1_2"
 	"github.com/jplck/advent-of-code-2022/challenge2_1"
@@ -63,6 +64,8 @@ func main() {
 		challenge12.Run("./puzzles/input12")
 	case "13":
 		challenge13.Run("./puzzles/input13")
+	case "14":
+		challenge14.Run("./puzzles/input14")
 	}
 
 }
